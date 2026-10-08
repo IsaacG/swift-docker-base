@@ -16,7 +16,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM ubuntu:24.04
+FROM ubuntu:24.04@sha256:534baea6a22c03a63003dbc8dbe78fe34bc0d7e595d9a9dc9834884ff530eb55
 
 LABEL org.opencontainers.image.title="Exercism Swift Docker Image"
 LABEL org.opencontainers.image.description="Docker Container for the Swift Exercism track"
