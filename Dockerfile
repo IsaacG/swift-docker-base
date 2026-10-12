@@ -16,14 +16,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM ubuntu:24.04
+FROM ubuntu:26.04
 
-LABEL org.opencontainers.image.title="Exercism Swift Docker Image"
-LABEL org.opencontainers.image.description="Docker Container for the Swift Exercism track"
-LABEL org.opencontainers.image.source=https://github.com/exercism/swift-docker-base
-LABEL org.opencontainers.image.licenses="AGPL-3.0 AND Apache-2.0"
-
-RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true && apt-get -q update && \
+RUN apt-get -q update && \
     apt-get -q install -y \
     binutils \
     git \
@@ -57,10 +52,10 @@ RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true && ap
 # pub   rsa4096 2024-09-16 [SC] [expires: 2026-09-16]
 #      52BB7E3DE28A71BE22EC05FFEF80A866B47A981F
 # uid           [ unknown] Swift 6.x Release Signing Key <swift-infrastructure@forums.swift.org>
-ARG SWIFT_SIGNING_KEY=52BB7E3DE28A71BE22EC05FFEF80A866B47A981F
-ARG SWIFT_PLATFORM=ubuntu24.04
-ARG SWIFT_BRANCH=swift-6.2-release
-ARG SWIFT_VERSION=swift-6.2-RELEASE
+ARG SWIFT_SIGNING_KEY=EF80A866B47A981F
+ARG SWIFT_PLATFORM=ubuntu26.04
+ARG SWIFT_BRANCH=swift-6.4.0-release
+ARG SWIFT_VERSION=swift-6.4.0-RELEASE
 ARG SWIFT_WEBROOT=https://download.swift.org
 
 ENV SWIFT_SIGNING_KEY=$SWIFT_SIGNING_KEY \
@@ -74,22 +69,17 @@ RUN set -e; \
     url=; \
     case "${ARCH_NAME##*-}" in \
         'amd64') \
-            OS_ARCH_SUFFIX=''; \
-            ;; \
+	    DOWNLOAD="https://download.swift.org/swift-6.4.0-release/ubuntu2604/swift-6.4.0-RELEASE/swift-6.4.0-RELEASE-ubuntu26.04.tar.gz";; \
         'arm64') \
-            OS_ARCH_SUFFIX='-aarch64'; \
-            ;; \
+            DOWNLOAD="https://download.swift.org/swift-6.4.0-release/ubuntu2604-aarch64/swift-6.4.0-RELEASE/swift-6.4.0-RELEASE-ubuntu26.04-aarch64.tar.gz";; \
         *) echo >&2 "error: unsupported architecture: '$ARCH_NAME'"; exit 1 ;; \
     esac; \
-    SWIFT_WEBDIR="$SWIFT_WEBROOT/$SWIFT_BRANCH/$(echo $SWIFT_PLATFORM | tr -d .)$OS_ARCH_SUFFIX" \
-    && SWIFT_BIN_URL="$SWIFT_WEBDIR/$SWIFT_VERSION/$SWIFT_VERSION-$SWIFT_PLATFORM$OS_ARCH_SUFFIX.tar.gz" \
-    && SWIFT_SIG_URL="$SWIFT_BIN_URL.sig" \
+    SWIFT_SIG_URL="${DOWNLOAD}.sig" \
     # - Grab curl here so we cache better up above
-    && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -q update && apt-get -q install -y curl && rm -rf /var/lib/apt/lists/* \
     # - Download the GPG keys, Swift toolchain, and toolchain signature, and verify.
     && export GNUPGHOME="$(mktemp -d)" \
-    && curl -fsSL "$SWIFT_BIN_URL" -o swift.tar.gz "$SWIFT_SIG_URL" -o swift.tar.gz.sig \
+    && curl -fsSL "$DOWNLOAD" -o swift.tar.gz "$SWIFT_SIG_URL" -o swift.tar.gz.sig \
     && gpg --batch --quiet --keyserver keyserver.ubuntu.com --recv-keys "$SWIFT_SIGNING_KEY" \
     && gpg --batch --verify swift.tar.gz.sig swift.tar.gz \
     ## 
