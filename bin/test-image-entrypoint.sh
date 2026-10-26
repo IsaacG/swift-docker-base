@@ -10,6 +10,6 @@ set -euo pipefail
 swift --version
 
 cd /tmp/TestTool
-swift test
+swift test --build-system native
 
 printf "All tests are passed!\n"
